@@ -44,6 +44,7 @@ module.exports = (sequelize, DataTypes) => {
 
   List.associate = (models) => {
     List.belongsTo(models.Box, { foreignKey: 'box_id', allowNull: false, onDelete: 'cascade' });
+    List.belongsTo(models.Project, { foreignKey: 'project_id', allowNull: false, onDelete: 'cascade' });
     List.hasMany(models.Comment, { foreignKey: 'list_id', allowNull: false, onDelete: 'cascade' });
     List.hasMany(models.Assign, { foreignKey: 'list_id', allowNull: false, onDelete: 'cascade' });
   };

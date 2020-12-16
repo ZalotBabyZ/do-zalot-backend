@@ -4,6 +4,7 @@ module.exports = {
   up: async (queryInterface, Sequelize) => {
     return queryInterface.bulkInsert('lists', [
       {
+        project_id: '1',
         box_id: '3',
         list: "Loki's scepter",
         description: 'at Eastern European country of Sokovia commences',
@@ -18,6 +19,7 @@ module.exports = {
         list_deadline: '2021-01-31',
       },
       {
+        project_id: '1',
         box_id: '1',
         list: 'Pietro and Wanda Maximoff',
         description:
@@ -33,6 +35,7 @@ module.exports = {
         list_deadline: '2021-01-31',
       },
       {
+        project_id: '1',
         box_id: '1',
         list: 'Ultron',
         description: 'He think that the only way to save Earth is to eradicate humanity.',
@@ -47,6 +50,7 @@ module.exports = {
         list_deadline: '2021-01-31',
       },
       {
+        project_id: '1',
         box_id: '4',
         list: 'ล้ม S.H.I.E.L.D. ซะ',
         description: 'Hydra เยอะเกิ๊น',
@@ -61,6 +65,7 @@ module.exports = {
         list_deadline: '2021-01-31',
       },
       {
+        project_id: '1',
         box_id: '1',
         list: 'Add THOR PLEASE',
         description: 'Has any one know Thor Username?',
@@ -75,6 +80,7 @@ module.exports = {
         list_deadline: '2021-01-31',
       },
       {
+        project_id: '1',
         box_id: '5',
         list: "Loki's scepter",
         description: 'https://res.cloudinary.com/dmtmyh1hg/image/upload/v1607670360/marvel/loki-scepter_z1jyku.jpg',
@@ -88,6 +94,7 @@ module.exports = {
         list_deadline: '2021-01-31',
       },
       {
+        project_id: '3',
         box_id: '13',
         list: 'แอบเข้าโซนหนังสือต้องห้าม',
         description: 'มอมเหล้าหว่องแล้วจ๊กมาสัก2-3เล่ม',
@@ -101,6 +108,7 @@ module.exports = {
         list_deadline: '2021-01-02',
       },
       {
+        project_id: '3',
         box_id: '14',
         list: 'ชวนหว่องไปจิบชาที่ลอนดอน',
         description: 'แอบถามเวยเวยว่าหว่องชอบชาอะไร',
@@ -114,6 +122,7 @@ module.exports = {
         list_deadline: '2021-01-01',
       },
       {
+        project_id: '3',
         box_id: '15',
         list: 'ไปรักษาตัวที่ Kamar-Taj',
         description: 'ความหวังสุดท้าย ยังไงก็ต้องลองดู',
@@ -127,6 +136,7 @@ module.exports = {
         list_deadline: '2016-01-31',
       },
       {
+        project_id: '3',
         box_id: '15',
         list: 'นัดทำกายภาพบำบัด',
         description: 'อย่าลืมออกกำลังกายเยอะๆนะ',

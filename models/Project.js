@@ -27,6 +27,7 @@ module.exports = (sequelize, DataTypes) => {
   Project.associate = (models) => {
     Project.hasMany(models.Team, { foreignKey: 'project_id', allowNull: false, onDelete: 'cascade' });
     Project.hasMany(models.Box, { foreignKey: 'project_id', allowNull: false, onDelete: 'cascade' });
+    Project.hasMany(models.List, { foreignKey: 'project_id', allowNull: false, onDelete: 'cascade' });
     Project.hasOne(models.Config, { foreignKey: 'project_id', allowNull: false, onDelete: 'cascade' });
   };
 
