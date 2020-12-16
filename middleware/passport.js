@@ -7,8 +7,8 @@ const option = {
   secretOrKey: process.env.SECRET,
 };
 
-const jwtStrategyStaff = new Strategy(option, async (payload, done) => {
-  const targetUser = await db.Staff.findOne({ where: { id: payload.id } });
+const jwtStrategyUser = new Strategy(option, async (payload, done) => {
+  const targetUser = await db.User.findOne({ where: { id: payload.userId } });
 
   if (targetUser) {
     done(null, targetUser);
@@ -17,15 +17,4 @@ const jwtStrategyStaff = new Strategy(option, async (payload, done) => {
   }
 });
 
-const jwtStrategyMother = new Strategy(option, async (payload, done) => {
-  const targetUser = await db.MotherProfile.findOne({ where: { id: payload.id } });
-
-  if (targetUser) {
-    done(null, targetUser);
-  } else {
-    done(null, false);
-  }
-});
-
-passport.use('jwt-staff', jwtStrategyStaff);
-passport.use('jwt-mother', jwtStrategyMother);
+passport.use('jwt-user', jwtStrategyUser);

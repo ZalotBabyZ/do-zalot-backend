@@ -6,6 +6,7 @@ const cors = require('cors');
 const db = require('./models');
 
 const UserRoute = require('./routes/user');
+const ProjectRoute = require('./routes/project');
 
 const app = express();
 
@@ -15,6 +16,7 @@ app.use(express.urlencoded({ extended: false }));
 app.use(express.static('public'));
 
 app.use('/users', UserRoute);
+app.use('/projects', ProjectRoute);
 
 app.use((req, res, next) => {
   res.status(404).send({ message: 'path not found on this server' });

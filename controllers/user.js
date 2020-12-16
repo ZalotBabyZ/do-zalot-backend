@@ -1,7 +1,6 @@
 const db = require('../models');
 const bcryptjs = require('bcryptjs');
 const jwt = require('jsonwebtoken');
-const { Op } = require('sequelize');
 
 const login = async (req, res) => {
   try {
@@ -26,9 +25,10 @@ const login = async (req, res) => {
         res.status(400).send({ message: 'Incorrect username or password' });
       } else {
         const payload = {
-          id: targetUser.id,
+          userId: targetUser.id,
           userVip: targetUser.user_vip,
           username: targetUser.username,
+          userColor: targetUser.user_color,
           createAt: new Date(),
         };
         const token = jwt.sign(payload, process.env.SECRET, { expiresIn: 86400 });
@@ -42,20 +42,25 @@ const login = async (req, res) => {
           include: {
             model: db.Project,
             attributes: ['id', 'project_name', 'description'],
-            include: {
-              model: db.List,
-              attributes: ['id', 'score', 'status'],
-              include: {
-                model: db.Assign,
-                attributes: ['user_status', 'user_id'],
+            include: [
+              {
+                model: db.List,
+                attributes: ['id', 'score', 'status'],
+                include: {
+                  model: db.Assign,
+                  attributes: ['user_status', 'user_id'],
+                },
               },
-            },
+              {
+                model: db.Config,
+                attributes: ['project_color'],
+              },
+            ],
           },
         });
 
         const result = projectList.map((project) => {
           const lists = project.Project.Lists;
-
           const totalUserScore = lists.reduce((accum, list) => {
             return list.Assigns.find((assign) => assign.user_id === targetUser.id && assign.user_status === 'UNDERTAKE')
               ? accum + list.score
@@ -81,16 +86,17 @@ const login = async (req, res) => {
           const { user_role, user_pin, order } = project;
           const { id, project_name, description } = project.Project;
           return {
-            user_role,
-            user_pin,
-            order,
-            project_id: id,
-            project_name,
+            projectId: id,
+            projectName: project_name,
             description,
+            projectColor: project.Project.Config.project_color,
+            userRole: user_role,
             totalProjectScore,
             doneProjectScore,
             totalUserScore,
             doneUserScore,
+            userPin: user_pin,
+            order,
           };
         });
 
