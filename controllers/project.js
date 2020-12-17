@@ -40,6 +40,7 @@ const getProject = async (req, res) => {
         {
           model: db.Team,
           attributes: [
+            ['user_id', 'id'],
             ['user_status', 'userStatus'],
             ['user_role', 'userRole'],
             ['created_at', 'createdAt'],
@@ -75,10 +76,20 @@ const getProject = async (req, res) => {
               ['created_at', 'createdAt'],
               ['updated_at', 'updatedAt'],
             ],
-            include: {
-              model: db.Assign,
-              attributes: ['id', ['user_status', 'userStatus'], ['updated_at', 'updatedAt']],
-            },
+            include: [
+              {
+                model: db.Assign,
+                attributes: [
+                  ['user_id', 'id'],
+                  ['user_status', 'userStatus'],
+                  ['updated_at', 'updatedAt'],
+                ],
+              },
+              {
+                model: db.Comment,
+                attributes: [['updated_at', 'updatedAt']],
+              },
+            ],
           },
         },
       ],
@@ -107,11 +118,6 @@ const getProject = async (req, res) => {
     const approve =
       config.approve_by_a === req.user.id || config.approve_by_b === req.user.id || config.approve_by_c === req.user.id;
 
-    // boxes
-    // const boxes = Boxes.map((box) => {
-    //   const { id, name, description, type, color, projectPin, order, Lists } = box.dataValues;
-    //   return { id, name, description, type, color, projectPin, order, lists: Lists.dataValues };
-    // });
     res.status(200).send({
       project: { name, description, vip, createdAt, color, deadline },
       user: { role, joinAt },
