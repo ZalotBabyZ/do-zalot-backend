@@ -20,7 +20,6 @@ module.exports = (sequelize, DataTypes) => {
       },
       score: {
         type: DataTypes.INTEGER,
-        defaultValue: 1,
       },
       project_pin: {
         type: DataTypes.INTEGER,

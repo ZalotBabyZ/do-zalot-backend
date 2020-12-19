@@ -52,7 +52,7 @@ const getProject = async (req, res) => {
           model: db.Box,
           attributes: [
             'id',
-            ['box_name', 'name'],
+            'box_name',
             'description',
             'type',
             ['box_color', 'color'],
@@ -103,6 +103,15 @@ const getProject = async (req, res) => {
     const color = config.project_color;
     const deadline = config.project_deadline;
 
+    const boxTodo = Boxes.reduce((acc, box) => {
+      return box.type !== 'TODO' ? acc : [...acc, { id: box.id, name: box.box_name }];
+    }, []);
+    const boxDoing = Boxes.reduce((acc, box) => {
+      return box.type !== 'DOING' ? acc : [...acc, { id: box.id, name: box.box_name }];
+    }, []);
+    const boxDone = Boxes.reduce((acc, box) => {
+      return box.type !== 'DONE' ? acc : [...acc, { id: box.id, name: box.box_name }];
+    }, []);
     // user
     const role = user.user_role;
     const joinAt = user.updated_at;
@@ -118,8 +127,34 @@ const getProject = async (req, res) => {
     const approve =
       config.approve_by_a === req.user.id || config.approve_by_b === req.user.id || config.approve_by_c === req.user.id;
 
+    Boxes.forEach((box) => {
+      // const lists = box.Lists;
+      box.Lists = box.Lists.sort(function (a, b) {
+        return a.order - b.order;
+      });
+      box.Lists = box.Lists.sort(function (b, a) {
+        return a.project_pin - b.project_pin;
+      });
+    });
+    // let projectBox = res.data.boxes;
+
+    // projectBox = projectBox.sort(function (a, b) {
+    //   return a.order - b.order;
+    // });
+    // projectBox = projectBox.sort(function (b, a) {
+    //   return a.projectPin - b.projectPin;
+    // });
+
     res.status(200).send({
-      project: { name, description, vip, createdAt, color, deadline },
+      project: {
+        name,
+        description,
+        vip,
+        createdAt,
+        color,
+        deadline,
+        box: { TODO: boxTodo, DOING: boxDoing, DONE: boxDone },
+      },
       user: { role, joinAt },
       right: { deleteProject, editScore, editConfig, editAssign, regressStatus, expelMember, approve },
       teams: Teams,
