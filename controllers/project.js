@@ -50,15 +50,7 @@ const getProject = async (req, res) => {
         { model: db.Config },
         {
           model: db.Box,
-          attributes: [
-            'id',
-            'box_name',
-            'description',
-            'type',
-            ['box_color', 'color'],
-            ['project_pin', 'projectPin'],
-            'order',
-          ],
+          attributes: ['id', 'box_name', 'description', 'type', ['box_color', 'color'], 'project_pin', 'order'],
           include: {
             model: db.List,
             attributes: [
@@ -70,7 +62,7 @@ const getProject = async (req, res) => {
               'status',
               'important',
               'score',
-              ['project_pin', 'projectPin'],
+              'project_pin',
               'order',
               ['list_deadline', 'listDeadline'],
               ['created_at', 'createdAt'],
@@ -128,22 +120,9 @@ const getProject = async (req, res) => {
       config.approve_by_a === req.user.id || config.approve_by_b === req.user.id || config.approve_by_c === req.user.id;
 
     Boxes.forEach((box) => {
-      // const lists = box.Lists;
-      box.Lists = box.Lists.sort(function (a, b) {
-        return a.order - b.order;
-      });
-      box.Lists = box.Lists.sort(function (b, a) {
-        return a.project_pin - b.project_pin;
-      });
+      box.Lists.sort((a, b) => b.project_pin - a.project_pin || a.order - b.order);
     });
-    // let projectBox = res.data.boxes;
-
-    // projectBox = projectBox.sort(function (a, b) {
-    //   return a.order - b.order;
-    // });
-    // projectBox = projectBox.sort(function (b, a) {
-    //   return a.projectPin - b.projectPin;
-    // });
+    Boxes.sort((a, b) => b.project_pin - a.project_pin || a.order - b.order);
 
     res.status(200).send({
       project: {

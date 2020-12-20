@@ -109,6 +109,54 @@ const login = async (req, res) => {
   }
 };
 
+const register = async (req, res) => {
+  try {
+    const { username, password, firstname, lastname, email, user_color, gender } = req.body;
+    if (!username) {
+      return res.status(400).send({ message: 'Username not exist' });
+    }
+
+    const targetUser = await db.User.findOne({ where: { username } });
+
+    if (targetUser) {
+      res.status(400).send({ message: 'Username already taken' });
+    }
+
+    if (!firstname) {
+      return res.status(400).send({ message: 'First name not exist' });
+    }
+    if (!lastname) {
+      return res.status(400).send({ message: 'Last name not exist' });
+    }
+    if (!password) {
+      return res.status(400).send({ message: 'Password not exist' });
+    }
+    if (!email) {
+      return res.status(400).send({ message: 'Email not exist' });
+    }
+    if (!user_color) {
+      return res.status(400).send({ message: 'Color not exist' });
+    }
+
+    const salt = bcryptjs.genSaltSync(Number(process.env.SALT_ROUND));
+    const hashedPassword = bcryptjs.hashSync(password, salt);
+    const user = await db.User.create({
+      username,
+      firstname,
+      lastname,
+      email,
+      user_color,
+      gender,
+      password: hashedPassword,
+    });
+
+    res.status(201).send(user);
+  } catch (err) {
+    res.status(500).send({ message: err.message });
+  }
+};
+
 module.exports = {
   login,
+  register,
 };

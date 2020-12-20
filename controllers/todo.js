@@ -35,19 +35,48 @@ const updateStatus = async (req, res) => {
         },
       ],
     });
+
     if (!targetList.Project && !targetList.Assigns[0])
-      return res.status(401).send({ message: 'คุณไม่ได้รับอนุญาตให้แก้ไข progress ของ todolist นี้' });
+      return res.status(401).send({ message: 'You have no right to set this todo status' });
+
+    const targetBox = await db.List.findAll({ where: { box_id: newBoxId }, order: [['order', 'DESC']] });
+    let order = 1;
+    let projectPin = 0;
+    if (targetBox.length) {
+      order = targetList.box_id === newBoxId ? targetList.order : targetBox[0].order + 1;
+    }
+    if (targetList.project_pin > 0) {
+      for (let i = 1; i <= 3; i++) {
+        const targetList = targetBox.find((list) => list.project_pin === i);
+        if (targetList) {
+          targetList.project_pin = i - 1;
+          await targetList.save();
+        }
+      }
+      projectPin = 3;
+    } else if (targetList.project_pin < 0) {
+      for (let i = -1; i >= -3; i--) {
+        const targetList = targetBox.find((list) => list.project_pin === i);
+        if (targetList) {
+          targetList.project_pin = i + 1;
+          await targetList.save();
+        }
+      }
+      projectPin = -3;
+    }
+
     targetList.status = status;
     targetList.box_id = newBoxId;
+    targetList.order = order;
+    targetList.project_pin = projectPin;
     await targetList.save();
-    res.status(200).send({
-      boxId: targetList,
-    });
+    res.status(200).send({ message: 'Todo status update' });
   } catch (err) {
     console.log(err);
     res.status(500).send({ message: err.message });
   }
 };
+
 const addNewList = async (req, res) => {
   try {
     const { box_id, project_id, type, status, list, description, score, pin, list_deadline } = req.body;
@@ -97,10 +126,8 @@ const addNewList = async (req, res) => {
     } else if (pin === 'pinBottom') {
       for (let i = -1; i >= -3; i--) {
         const targetList = targetBox.find((list) => list.project_pin === i);
-        console.log(targetList);
         if (targetList) {
           targetList.project_pin = i + 1;
-          console.log(targetList.project_pin);
           await targetList.save();
         }
       }
