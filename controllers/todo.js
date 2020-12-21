@@ -144,9 +144,79 @@ const addNewList = async (req, res) => {
       score,
       project_pin,
       order,
-      list_deadline: new Date(list_deadline),
+      list_deadline: list_deadline ? new Date(list_deadline) : undefined,
     });
     return res.status(201).send({ message: 'New List already create' });
+  } catch (err) {
+    console.log(err);
+    res.status(500).send({ message: err.message });
+  }
+};
+
+const getEditList = async (req, res) => {
+  try {
+    const { list_id } = req.params;
+
+    console.log(list_id);
+    if (!list_id) {
+      res.status(400).send({ message: 'List ID not exist' });
+    }
+
+    const targetList = await db.List.findOne({
+      where: { id: list_id },
+      include: [
+        {
+          model: db.Comment,
+        },
+        {
+          model: db.Assign,
+        },
+      ],
+    });
+
+    return res.status(200).send(targetList);
+  } catch (err) {
+    console.log(err);
+    res.status(500).send({ message: err.message });
+  }
+};
+
+const editList = async (req, res) => {
+  try {
+    const { list_id, list, deadline, score, description } = req.body;
+    console.log(list_id);
+    if (!list_id) {
+      res.status(400).send({ message: 'List ID not exist' });
+    }
+    if (!list) {
+      res.status(400).send({ message: 'List not exist' });
+    }
+    if (!deadline) {
+      res.status(400).send({ message: 'Deadline not exist' });
+    }
+    // if (!score) {
+    //   res.status(400).send({ message: 'Score not exist' });
+    // }
+
+    const targetList = await db.List.findOne({
+      where: { id: list_id },
+    });
+
+    if (!targetList) {
+      return res.status(404).send({ message: 'Target list not found' });
+    }
+
+    if (targetList.type === 'TODO' && !score) {
+      res.status(400).send({ message: 'Score not exist' });
+    }
+
+    targetList.list = list;
+    targetList.list_deadline = deadline;
+    targetList.score = score;
+    targetList.description = description;
+    await targetList.save();
+
+    return res.status(200).send(targetList);
   } catch (err) {
     console.log(err);
     res.status(500).send({ message: err.message });
@@ -156,4 +226,6 @@ const addNewList = async (req, res) => {
 module.exports = {
   updateStatus,
   addNewList,
+  getEditList,
+  editList,
 };
