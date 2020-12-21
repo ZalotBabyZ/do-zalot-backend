@@ -8,6 +8,7 @@ const db = require('./models');
 const UserRoute = require('./routes/user');
 const ProjectRoute = require('./routes/project');
 const TodoRoute = require('./routes/todo');
+const CommentRoute = require('./routes/comment');
 
 const app = express();
 
@@ -19,6 +20,7 @@ app.use(express.static('public'));
 app.use('/users', UserRoute);
 app.use('/projects', ProjectRoute);
 app.use('/todos', TodoRoute);
+app.use('/comments', CommentRoute);
 
 app.use((req, res, next) => {
   res.status(404).send({ message: 'path not found on this server' });

@@ -157,7 +157,6 @@ const getEditList = async (req, res) => {
   try {
     const { list_id } = req.params;
 
-    console.log(list_id);
     if (!list_id) {
       res.status(400).send({ message: 'List ID not exist' });
     }
@@ -184,7 +183,7 @@ const getEditList = async (req, res) => {
 const editList = async (req, res) => {
   try {
     const { list_id, list, deadline, score, description } = req.body;
-    console.log(list_id);
+
     if (!list_id) {
       res.status(400).send({ message: 'List ID not exist' });
     }
