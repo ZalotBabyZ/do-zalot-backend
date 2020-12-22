@@ -2,6 +2,81 @@ const db = require('../models');
 const bcryptjs = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 
+const getProjectList = async (req, res) => {
+  try {
+    const projectList = await db.Team.findAll({
+      where: {
+        user_id: req.user.id,
+        user_status: 'MEMBER',
+      },
+      attributes: ['user_role', 'user_pin', 'order'],
+      include: {
+        model: db.Project,
+        attributes: ['id', 'project_name', 'description'],
+        include: [
+          {
+            model: db.List,
+            attributes: ['id', 'score', 'status'],
+            include: {
+              model: db.Assign,
+              attributes: ['user_status', 'user_id'],
+            },
+          },
+          {
+            model: db.Config,
+            attributes: ['project_color'],
+          },
+        ],
+      },
+    });
+
+    const result = projectList.map((project) => {
+      const lists = project.Project.Lists;
+      const totalUserScore = lists.reduce((accum, list) => {
+        return list.Assigns.find((assign) => assign.user_id === req.user.id && assign.user_status === 'UNDERTAKE')
+          ? accum + list.score
+          : accum;
+      }, 0);
+
+      const doneUserScore = lists.reduce((accum, list) => {
+        return list.Assigns.find((assign) => assign.user_id === req.user.id && assign.user_status === 'UNDERTAKE') &&
+          list.status === 'DONE'
+          ? accum + list.score
+          : accum;
+      }, 0);
+
+      const totalProjectScore = lists.reduce((accum, list) => {
+        return list.score ? accum + list.score : accum;
+      }, 0);
+
+      const doneProjectScore = lists.reduce((accum, list) => {
+        return list.score && list.status === 'DONE' ? accum + list.score : accum;
+      }, 0);
+
+      const { user_role, user_pin, order } = project;
+      const { id, project_name, description } = project.Project;
+      return {
+        projectId: id,
+        projectName: project_name,
+        description,
+        projectColor: project.Project.Config.project_color,
+        userRole: user_role,
+        totalProjectScore,
+        doneProjectScore,
+        totalUserScore,
+        doneUserScore,
+        userPin: user_pin,
+        order,
+      };
+    });
+
+    res.status(200).send({ userProject: { projectList: result, projectCount: result.length } });
+  } catch (err) {
+    console.log(err);
+    res.status(500).send({ message: err.message });
+  }
+};
+
 const login = async (req, res) => {
   try {
     const { username, password } = req.body;
@@ -159,4 +234,5 @@ const register = async (req, res) => {
 module.exports = {
   login,
   register,
+  getProjectList,
 };

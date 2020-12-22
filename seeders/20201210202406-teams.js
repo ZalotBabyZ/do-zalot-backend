@@ -77,7 +77,7 @@ module.exports = {
         project_id: '3',
         user_id: '4',
         user_role: 'TEAM_MEMBER',
-        user_status: 'FORMER_MEMBER',
+        user_status: 'MEMBER',
         user_pin: 0,
         order: 1,
         created_at: new Date(new Date().setDate(new Date().getDate() - 2001)),
