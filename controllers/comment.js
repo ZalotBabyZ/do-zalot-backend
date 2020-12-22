@@ -22,6 +22,25 @@ const addNewComment = async (req, res) => {
   }
 };
 
+const destroyComment = async (req, res) => {
+  try {
+    const { id } = req.params;
+    if (!id) {
+      return res.status(400).send({ message: 'ID not exist' });
+    }
+    const targetComment = await db.Comment.findOne({ where: { id, user_id: req.user.id } });
+    if (!targetComment) {
+      return res.status(404).send({ message: 'Not found' });
+    }
+    await targetComment.destroy();
+    return res.status(200).send({ message: 'deleted' });
+  } catch (err) {
+    console.log(err);
+    res.status(500).send({ message: err.message });
+  }
+};
+
 module.exports = {
   addNewComment,
+  destroyComment,
 };

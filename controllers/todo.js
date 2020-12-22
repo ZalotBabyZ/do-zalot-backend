@@ -46,23 +46,23 @@ const updateStatus = async (req, res) => {
       order = targetList.box_id === newBoxId ? targetList.order : targetBox[0].order + 1;
     }
     if (targetList.project_pin > 0) {
-      for (let i = 1; i <= 3; i++) {
+      for (let i = 1; i <= 10; i++) {
         const targetList = targetBox.find((list) => list.project_pin === i);
         if (targetList) {
           targetList.project_pin = i - 1;
           await targetList.save();
         }
       }
-      projectPin = 3;
+      projectPin = 10;
     } else if (targetList.project_pin < 0) {
-      for (let i = -1; i >= -3; i--) {
+      for (let i = -1; i >= -10; i--) {
         const targetList = targetBox.find((list) => list.project_pin === i);
         if (targetList) {
           targetList.project_pin = i + 1;
           await targetList.save();
         }
       }
-      projectPin = -3;
+      projectPin = -10;
     }
 
     targetList.status = status;
@@ -79,7 +79,7 @@ const updateStatus = async (req, res) => {
 
 const addNewList = async (req, res) => {
   try {
-    const { box_id, project_id, type, status, list, description, score, pin, list_deadline } = req.body;
+    const { box_id, project_id, type, status, list, description, pin, list_deadline, score } = req.body;
     // req.user.id
 
     if (!box_id) {
@@ -91,13 +91,17 @@ const addNewList = async (req, res) => {
     if (!type) {
       return res.status(400).send({ message: 'Type not exist' });
     }
+    let newScore;
     if (type === 'TODO') {
       if (!score) {
         return res.status(400).send({ message: 'Score not exist' });
       }
+      newScore = score;
       if (!list_deadline) {
         return res.status(400).send({ message: 'Deadline not exist' });
       }
+    } else {
+      newScore = 0;
     }
     if (!status) {
       return res.status(400).send({ message: 'Status not exist' });
@@ -141,7 +145,7 @@ const addNewList = async (req, res) => {
       status,
       list,
       description,
-      score,
+      score: newScore,
       project_pin,
       order,
       list_deadline: list_deadline ? new Date(list_deadline) : undefined,

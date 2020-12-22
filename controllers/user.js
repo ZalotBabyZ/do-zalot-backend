@@ -222,6 +222,8 @@ const register = async (req, res) => {
       email,
       user_color,
       gender,
+      image:
+        'https://res.cloudinary.com/dmtmyh1hg/image/upload/v1608657166/default_pic/f7a299b9c1bf3b0e8a64b7e6a5124029_f20ayu.jpg',
       password: hashedPassword,
     });
 
