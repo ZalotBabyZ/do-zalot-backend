@@ -145,6 +145,113 @@ const getProject = async (req, res) => {
   }
 };
 
+const createProject = async (req, res) => {
+  try {
+    const { user_role, project_color, project_name, memberList, description, project_deadline } = req.body;
+    if (!user_role) {
+      return res.status(400).send({ message: 'Role not exist' });
+    }
+    if (!project_color) {
+      return res.status(400).send({ message: 'Project color not exist' });
+    }
+    if (!project_name) {
+      return res.status(400).send({ message: 'project name not exist' });
+    }
+    if (!memberList) {
+      return res.status(400).send({ message: 'Member list not exist' });
+    }
+    if (!project_deadline) {
+      return res.status(400).send({ message: 'Deadline not exist' });
+    }
+
+    const targetProject = await db.Project.create({ project_name, description });
+    await db.Config.create({
+      project_id: targetProject.id,
+      project_deadline,
+      project_color,
+      delete_right: req.user.id,
+      edit_config_right: req.user.id,
+      edit_score_right: req.user.id,
+      edit_assign_right: req.user.id,
+      regress_right: req.user.id,
+      expel_right: req.user.id,
+    });
+    await db.Box.bulkCreate([
+      {
+        project_id: targetProject.id,
+        box_name: 'TODO BOX',
+        description: 'todo',
+        type: 'TODO',
+        box_color: 'var(--thirdaryDarkest-color)',
+        project_pin: 0,
+        order: 1,
+      },
+      {
+        project_id: targetProject.id,
+        box_name: 'DOING BOX',
+        description: 'doing',
+        type: 'DOING',
+        box_color: 'var(--thirdary-color)',
+        project_pin: 0,
+        order: 2,
+      },
+      {
+        project_id: targetProject.id,
+        box_name: 'DONE BOX',
+        description: 'done',
+        type: 'DONE',
+        box_color: 'var(--secondary-color)',
+        project_pin: 0,
+        order: 3,
+      },
+      {
+        project_id: targetProject.id,
+        box_name: 'RESOURCE',
+        description: 'resource pic etc.',
+        type: 'NOTE',
+        box_color: 'var(--primary-color)',
+        project_pin: 3,
+        order: 4,
+      },
+      {
+        project_id: targetProject.id,
+        box_name: 'NOTE',
+        description: 'not important note',
+        type: 'NOTE',
+        box_color: 'var(--primary-color)',
+        project_pin: -3,
+        order: 5,
+      },
+    ]);
+
+    await db.Team.create({
+      project_id: targetProject.id,
+      user_id: req.user.id,
+      user_role: user_role,
+      user_status: 'MEMBER',
+    });
+
+    memberList.forEach(async (member) => {
+      if (member.username) {
+        const targetUser = await db.User.findOne({ where: { username: member.username } });
+        if (targetUser) {
+          await db.Team.create({
+            project_id: targetProject.id,
+            user_id: targetUser.id,
+            user_role: 'TEAM_MEMBER',
+            user_status: 'INVITED',
+          });
+        }
+      }
+    });
+    res.status(201).send({ message: 'create new project' });
+  } catch (err) {
+    console.log(err);
+    res.status(500).send({ message: err.message });
+  }
+};
+
 module.exports = {
   getProject,
+  createProject,
 };

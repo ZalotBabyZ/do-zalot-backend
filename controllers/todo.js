@@ -115,23 +115,23 @@ const addNewList = async (req, res) => {
     let project_pin = 0;
 
     if (pin === 'pinTop') {
-      for (let i = 1; i <= 3; i++) {
+      for (let i = 1; i <= 10; i++) {
         const targetList = targetBox.find((list) => list.project_pin === i);
         if (targetList) {
           targetList.project_pin = i - 1;
           await targetList.save();
         }
       }
-      project_pin = 3;
+      project_pin = 10;
     } else if (pin === 'pinBottom') {
-      for (let i = -1; i >= -3; i--) {
+      for (let i = -1; i >= -10; i--) {
         const targetList = targetBox.find((list) => list.project_pin === i);
         if (targetList) {
           targetList.project_pin = i + 1;
           await targetList.save();
         }
       }
-      project_pin = -3;
+      project_pin = -10;
     }
 
     const targetList = await db.List.create({
@@ -146,6 +146,9 @@ const addNewList = async (req, res) => {
       order,
       list_deadline: list_deadline ? new Date(list_deadline) : undefined,
     });
+
+    await db.Assign.create({ user_id: req.user.id, list_id: targetList.id, user_status: 'UNDERTAKE' });
+
     return res.status(201).send({ message: 'New List already create' });
   } catch (err) {
     console.log(err);
