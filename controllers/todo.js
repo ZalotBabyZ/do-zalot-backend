@@ -192,14 +192,14 @@ const editList = async (req, res) => {
     const { list_id, list, deadline, score, description } = req.body;
 
     if (!list_id) {
-      res.status(400).send({ message: 'List ID not exist' });
+      return res.status(400).send({ message: 'List ID not exist' });
     }
     if (!list) {
-      res.status(400).send({ message: 'List not exist' });
+      return res.status(400).send({ message: 'List not exist' });
     }
-    if (!deadline) {
-      res.status(400).send({ message: 'Deadline not exist' });
-    }
+    // if (!deadline) {
+    //   return res.status(400).send({ message: 'Deadline not exist' });
+    // }
     // if (!score) {
     //   res.status(400).send({ message: 'Score not exist' });
     // }
@@ -213,11 +213,13 @@ const editList = async (req, res) => {
     }
 
     if (targetList.type === 'TODO' && !score) {
-      res.status(400).send({ message: 'Score not exist' });
+      return res.status(400).send({ message: 'Score not exist' });
     }
 
     targetList.list = list;
-    targetList.list_deadline = deadline;
+    if (deadline) {
+      targetList.list_deadline = deadline;
+    }
     targetList.score = score;
     targetList.description = description;
     await targetList.save();
