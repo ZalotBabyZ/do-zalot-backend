@@ -251,7 +251,27 @@ const createProject = async (req, res) => {
   }
 };
 
+const getPendingAssign = async (req, res) => {
+  try {
+    const user_id = req.user.id;
+
+    const targetUser = await db.Assign.FindAll({ where: { user_id } });
+    // model: db.Assign,
+    // attributes: [
+    //   ['user_id', 'id'],
+    //   ['user_status', 'userStatus'],
+    //   ['updated_at', 'updatedAt'],
+    // ],
+
+    res.status(201).send({ targetUser });
+  } catch (err) {
+    console.log(err);
+    res.status(500).send({ message: err.message });
+  }
+};
+
 module.exports = {
   getProject,
   createProject,
+  getPendingAssign,
 };
