@@ -251,19 +251,66 @@ const createProject = async (req, res) => {
   }
 };
 
-const getPendingAssign = async (req, res) => {
+const getPendingTeam = async (req, res) => {
   try {
     const user_id = req.user.id;
 
-    const targetUser = await db.Assign.FindAll({ where: { user_id } });
-    // model: db.Assign,
-    // attributes: [
-    //   ['user_id', 'id'],
-    //   ['user_status', 'userStatus'],
-    //   ['updated_at', 'updatedAt'],
-    // ],
+    const inviteList = await db.Team.findAll({
+      where: { user_id, user_status: 'INVITED' },
+      include: { model: db.Project, attributes: [['project_name', 'name']] },
+      attributes: ['id', ['user_status', 'status'], 'created_at'],
+    });
+    const requestList = await db.Team.findAll({
+      where: { user_id, user_status: 'REQUEST_TO_JOIN' },
+      include: { model: db.Project, attributes: [['project_name', 'name']] },
+      attributes: ['id', ['user_status', 'status'], 'created_at'],
+    });
 
-    res.status(201).send({ targetUser });
+    res.status(200).send({ inviteList, requestList });
+  } catch (err) {
+    console.log(err);
+    res.status(500).send({ message: err.message });
+  }
+};
+
+const acceptTeamInvite = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const user_id = req.user.id;
+
+    const inviteList = await db.Team.findOne({
+      where: { user_id, id },
+    });
+
+    if (!inviteList) {
+      return res.status(400).send({ message: 'Cannot accept this request' });
+    }
+
+    inviteList.user_status = 'MEMBER';
+    inviteList.save();
+
+    res.status(200).send({ message: 'updated' });
+  } catch (err) {
+    console.log(err);
+    res.status(500).send({ message: err.message });
+  }
+};
+const rejectTeamInvite = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const user_id = req.user.id;
+
+    const inviteList = await db.Team.findOne({
+      where: { user_id, id },
+    });
+
+    if (!inviteList) {
+      return res.status(400).send({ message: 'Cannot reject this request' });
+    }
+
+    await inviteList.destroy();
+
+    res.status(204).send();
   } catch (err) {
     console.log(err);
     res.status(500).send({ message: err.message });
@@ -273,5 +320,7 @@ const getPendingAssign = async (req, res) => {
 module.exports = {
   getProject,
   createProject,
-  getPendingAssign,
+  getPendingTeam,
+  acceptTeamInvite,
+  rejectTeamInvite,
 };

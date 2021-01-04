@@ -1,11 +1,19 @@
 const passport = require('passport');
 const router = require('express').Router();
-const { getProject, createProject, getPendingAssign } = require('../controllers/project');
+const {
+  getProject,
+  createProject,
+  getPendingTeam,
+  acceptTeamInvite,
+  rejectTeamInvite,
+} = require('../controllers/project');
 
 const auth = passport.authenticate('jwt-user', { session: false });
 
 router.get('/getProject', auth, getProject);
 router.post('/createProject', auth, createProject);
-router.get('/getPendingAssign', auth, getPendingAssign);
+router.get('/getPendingTeam', auth, getPendingTeam);
+router.patch('/acceptTeamInvite/:id', auth, acceptTeamInvite);
+router.delete('/rejectTeamInvite/:id', auth, rejectTeamInvite);
 
 module.exports = router;
