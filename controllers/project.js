@@ -1,5 +1,5 @@
 const db = require('../models');
-// const sequelize = require('sequelize');
+const { Op } = require('sequelize');
 
 const getProject = async (req, res) => {
   try {
@@ -229,6 +229,7 @@ const createProject = async (req, res) => {
       user_id: req.user.id,
       user_role: user_role,
       user_status: 'MEMBER',
+      order: '0',
     });
 
     memberList.forEach(async (member) => {
@@ -240,6 +241,7 @@ const createProject = async (req, res) => {
             user_id: targetUser.id,
             user_role: 'TEAM_MEMBER',
             user_status: 'INVITED',
+            order: '0',
           });
         }
       }
@@ -279,7 +281,7 @@ const acceptTeamInvite = async (req, res) => {
     const user_id = req.user.id;
 
     const inviteList = await db.Team.findOne({
-      where: { user_id, id },
+      where: { user_id, id, user_status: 'INVITED' },
     });
 
     if (!inviteList) {
@@ -301,7 +303,7 @@ const rejectTeamInvite = async (req, res) => {
     const user_id = req.user.id;
 
     const inviteList = await db.Team.findOne({
-      where: { user_id, id },
+      where: { user_id, id, user_status: 'INVITED' },
     });
 
     if (!inviteList) {
@@ -316,6 +318,38 @@ const rejectTeamInvite = async (req, res) => {
     res.status(500).send({ message: err.message });
   }
 };
+const requestProject = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const user_id = req.user.id;
+
+    const targetProject = await db.Team.findOne({
+      where: { user_id, project_id: id },
+    });
+
+    if (targetProject) {
+      if (targetProject.user_status !== 'FORMER_MEMBER') {
+        return res.status(400).send({ message: 'Cannot send this request' });
+      }
+      targetProject.user_status = 'REQUEST_TO_JOIN';
+      await targetProject.save();
+      return res.status(200).send({ message: 'request send' });
+    }
+
+    await db.Team.create({
+      user_role: 'TEAM_MEMBER',
+      user_status: 'REQUEST_TO_JOIN',
+      order: '0',
+      project_id: id,
+      user_id,
+    });
+
+    res.status(201).send({ message: 'request send' });
+  } catch (err) {
+    console.log(err);
+    res.status(500).send({ message: err.message });
+  }
+};
 
 module.exports = {
   getProject,
@@ -323,4 +357,5 @@ module.exports = {
   getPendingTeam,
   acceptTeamInvite,
   rejectTeamInvite,
+  requestProject,
 };
