@@ -1,6 +1,7 @@
 const db = require('../models');
 const bcryptjs = require('bcryptjs');
 const jwt = require('jsonwebtoken');
+const { request } = require('express');
 
 const getProjectList = async (req, res) => {
   try {
@@ -233,8 +234,38 @@ const register = async (req, res) => {
   }
 };
 
+const changePassword = async (req, res) => {
+  try {
+    const { oldPassword, newPassword } = req.body;
+
+    if (!oldPassword) {
+      return res.status(400).send({ message: 'Old password not exist' });
+    }
+    if (!newPassword) {
+      return res.status(400).send({ message: 'New password not exist' });
+    }
+
+    const isCorrect = await bcryptjs.compareSync(oldPassword, req.user.password);
+
+    if (!isCorrect) {
+      return res.status(400).send({ message: 'Incorrect old password' });
+    }
+
+    const salt = bcryptjs.genSaltSync(Number(process.env.SALT_ROUND));
+    const hashedPassword = bcryptjs.hashSync(newPassword, salt);
+
+    req.user.password = hashedPassword;
+    await req.user.save();
+
+    res.status(200).send({ message: 'Updated' });
+  } catch (err) {
+    res.status(500).send({ message: err.message });
+  }
+};
+
 module.exports = {
   login,
   register,
   getProjectList,
+  changePassword,
 };

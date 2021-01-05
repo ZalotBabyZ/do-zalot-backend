@@ -10,6 +10,10 @@ const option = {
 const jwtStrategyUser = new Strategy(option, async (payload, done) => {
   const targetUser = await db.User.findOne({ where: { id: payload.userId } });
 
+  if (targetUser.password_changed > new Date(payload.createAt)) {
+    return done(null, false);
+  }
+
   if (targetUser) {
     done(null, targetUser);
   } else {

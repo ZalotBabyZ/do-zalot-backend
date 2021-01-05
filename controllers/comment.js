@@ -22,6 +22,32 @@ const addNewComment = async (req, res) => {
   }
 };
 
+const editComment = async (req, res) => {
+  try {
+    const { id, comment } = req.body;
+    if (!id) {
+      return res.status(400).send({ message: 'ID not exist' });
+    }
+    if (!comment) {
+      return res.status(400).send({ message: 'Cannot sent blank field' });
+    }
+
+    const targetComment = await db.Comment.findOne({ where: { id, user_id: req.user.id } });
+
+    if (!targetComment) {
+      return res.status(404).send({ message: 'FAIL! Only comment owner can edit this.' });
+    }
+
+    targetComment.content = comment;
+    await targetComment.save();
+
+    return res.status(200).send({ message: 'updated' });
+  } catch (err) {
+    console.log(err);
+    res.status(500).send({ message: err.message });
+  }
+};
+
 const destroyComment = async (req, res) => {
   try {
     const { id } = req.params;
@@ -30,7 +56,7 @@ const destroyComment = async (req, res) => {
     }
     const targetComment = await db.Comment.findOne({ where: { id, user_id: req.user.id } });
     if (!targetComment) {
-      return res.status(404).send({ message: 'Not found' });
+      return res.status(404).send({ message: 'FAIL! Only comment owner can delete this.' });
     }
     await targetComment.destroy();
     return res.status(200).send({ message: 'deleted' });
@@ -42,5 +68,6 @@ const destroyComment = async (req, res) => {
 
 module.exports = {
   addNewComment,
+  editComment,
   destroyComment,
 };

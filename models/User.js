@@ -38,6 +38,10 @@ module.exports = (sequelize, DataTypes) => {
       vip_until: {
         type: DataTypes.DATEONLY,
       },
+      password_changed: {
+        type: DataTypes.DATE,
+        defaultValue: new Date(),
+      },
     },
     {
       tableName: 'users',
