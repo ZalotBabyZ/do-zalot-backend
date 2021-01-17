@@ -318,6 +318,7 @@ const rejectTeamInvite = async (req, res) => {
     res.status(500).send({ message: err.message });
   }
 };
+
 const requestProject = async (req, res) => {
   try {
     const { id } = req.params;
@@ -351,6 +352,104 @@ const requestProject = async (req, res) => {
   }
 };
 
+const cancelProjectRequest = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const user_id = req.user.id;
+
+    const requestList = await db.Team.findOne({
+      where: { user_id, id, user_status: 'REQUEST_TO_JOIN' },
+    });
+
+    if (!requestList) {
+      return res.status(400).send({ message: 'Cannot cancel this request' });
+    }
+
+    await requestList.destroy();
+
+    res.status(204).send();
+  } catch (err) {
+    console.log(err);
+    res.status(500).send({ message: err.message });
+  }
+};
+
+const getTeamRequest = async (req, res) => {
+  try {
+    const project_id = req.params.id;
+    const user_id = req.user.id;
+
+    const isUserMember = await db.Team.findOne({ where: { user_id, project_id } });
+    if (!isUserMember) {
+      return res.status(403).send({ message: 'forbidden' });
+    }
+
+    const requestList = await db.Team.findAll({
+      where: { project_id, user_status: 'REQUEST_TO_JOIN' },
+      include: { model: db.User, attributes: ['username'] },
+      attributes: ['id', ['user_status', 'status'], 'created_at'],
+    });
+
+    res.status(200).send({ requestList });
+  } catch (err) {
+    console.log(err);
+    res.status(500).send({ message: err.message });
+  }
+};
+
+const acceptTeamRequest = async (req, res) => {
+  try {
+    const { id, project_id } = req.params;
+    const user_id = req.user.id;
+
+    const isUserMember = await db.Team.findOne({ where: { user_id, project_id } });
+    if (!isUserMember) {
+      return res.status(403).send({ message: 'forbidden' });
+    }
+
+    const targetRequest = await db.Team.findOne({
+      where: { id, project_id, user_status: 'REQUEST_TO_JOIN' },
+    });
+
+    if (!targetRequest) {
+      res.status(404).send({ message: 'request not found' });
+    }
+
+    targetRequest.user_status = 'MEMBER';
+    await targetRequest.save();
+
+    res.status(200).send({ message: 'Accept request success' });
+  } catch (err) {
+    console.log(err);
+    res.status(500).send({ message: err.message });
+  }
+};
+const rejectTeamRequest = async (req, res) => {
+  try {
+    const { id, project_id } = req.params;
+    const user_id = req.user.id;
+
+    const isUserMember = await db.Team.findOne({ where: { user_id, project_id } });
+    if (!isUserMember) {
+      return res.status(403).send({ message: 'forbidden' });
+    }
+
+    const targetRequest = await db.Team.findOne({
+      where: { id, project_id, user_status: 'REQUEST_TO_JOIN' },
+    });
+
+    if (!targetRequest) {
+      res.status(404).send({ message: 'request not found' });
+    }
+
+    await targetRequest.destroy();
+    res.status(204).send();
+  } catch (err) {
+    console.log(err);
+    res.status(500).send({ message: err.message });
+  }
+};
+
 module.exports = {
   getProject,
   createProject,
@@ -358,4 +457,8 @@ module.exports = {
   acceptTeamInvite,
   rejectTeamInvite,
   requestProject,
+  cancelProjectRequest,
+  getTeamRequest,
+  acceptTeamRequest,
+  rejectTeamRequest,
 };
