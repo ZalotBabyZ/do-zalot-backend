@@ -62,6 +62,21 @@ module.exports = {
         created_at: new Date(new Date().setDate(new Date().getDate() - 2500)),
         updated_at: new Date(new Date().setDate(new Date().getDate() - 2500)),
       },
+      {
+        firstname: 'baobao',
+        lastname: 'zheng',
+        username: 'BabyZ',
+        email: 'babyzalot@gmail.com',
+        image:
+          'https://res.cloudinary.com/dmtmyh1hg/image/upload/v1611223674/marvel/iron_man_artwork_4k-wide_eksmfh.jpg',
+        password: bcryptjs.hashSync('HelloWorld', salt),
+        gender: 'FEMALE',
+        user_color: '#73cfec',
+        user_vip: false,
+        vip_until: '2021-01-31',
+        created_at: new Date(new Date().setDate(new Date().getDate() - 2500)),
+        updated_at: new Date(new Date().setDate(new Date().getDate() - 2500)),
+      },
     ]);
   },
 

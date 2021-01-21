@@ -1,7 +1,7 @@
 const db = require('../models');
 const bcryptjs = require('bcryptjs');
 const jwt = require('jsonwebtoken');
-const { request } = require('express');
+const sendEmail = require('../services/sendEmail');
 
 const getProjectList = async (req, res) => {
   try {
@@ -263,9 +263,39 @@ const changePassword = async (req, res) => {
   }
 };
 
+const resetPasswordToken = async (req, res) => {
+  try {
+    const { email } = req.body;
+
+    const targetUser = await db.User.findOne({ where: { email } });
+
+    if (!targetUser) {
+      return res.status(400).send({ message: 'email not found' });
+    }
+
+    const salt = bcryptjs.genSaltSync(Number(process.env.SALT_ROUND));
+    const hashedPassword = bcryptjs.hashSync(targetUser.password, salt);
+
+    targetUser.resetPasswordToken = hashedPassword;
+    await targetUser.save();
+
+    sendEmail({
+      from: 'baobaozheng.si@gmail.com',
+      to: email,
+      subject: 'Forget password',
+      text: `${process.env.FRONT_END_IP_ADDRESS}/forgotPassword?resetPasswordToken=${hashedPassword}`,
+    });
+
+    res.status(200).send({ message: 'token send' });
+  } catch (err) {
+    res.status(500).send({ message: err.message });
+  }
+};
+
 module.exports = {
   login,
   register,
   getProjectList,
   changePassword,
+  resetPasswordToken,
 };
