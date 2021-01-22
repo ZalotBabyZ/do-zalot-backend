@@ -29,6 +29,9 @@ module.exports = (sequelize, DataTypes) => {
       resetPasswordToken: {
         type: DataTypes.STRING,
       },
+      resetPasswordTokenExp: {
+        type: DataTypes.BIGINT,
+      },
       gender: {
         type: DataTypes.ENUM(['MALE', 'FEMALE']),
       },

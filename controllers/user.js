@@ -277,6 +277,7 @@ const resetPasswordToken = async (req, res) => {
     const hashedPassword = bcryptjs.hashSync(targetUser.password, salt);
 
     targetUser.resetPasswordToken = hashedPassword;
+    targetUser.resetPasswordTokenExp = new Date().getTime() + 900000;
     await targetUser.save();
 
     sendEmail({
@@ -292,10 +293,46 @@ const resetPasswordToken = async (req, res) => {
   }
 };
 
+const resetPassword = async (req, res) => {
+  try {
+    const { resetPasswordToken, newPassword } = req.body;
+
+    if (!newPassword) {
+      return res.status(400).send({ message: 'Password not exist' });
+    }
+
+    const targetUser = await db.User.findOne({ where: { resetPasswordToken } });
+
+    if (!targetUser) {
+      return res.status(400).send({ message: 'token not found' });
+    }
+
+    if (targetUser.resetPasswordTokenExp < new Date().getTime()) {
+      targetUser.resetPasswordToken = null;
+      targetUser.resetPasswordTokenExp = null;
+      await targetUser.save();
+      return res.status(400).send({ message: 'token expire' });
+    }
+
+    const salt = bcryptjs.genSaltSync(Number(process.env.SALT_ROUND));
+    const hashedPassword = bcryptjs.hashSync(newPassword, salt);
+
+    targetUser.password = hashedPassword;
+    targetUser.resetPasswordToken = null;
+    targetUser.resetPasswordTokenExp = null;
+    await targetUser.save();
+
+    res.status(200).send({ message: 'password change' });
+  } catch (err) {
+    res.status(500).send({ message: err.message });
+  }
+};
+
 module.exports = {
   login,
   register,
   getProjectList,
   changePassword,
   resetPasswordToken,
+  resetPassword,
 };
